@@ -6,11 +6,6 @@ import java.lang.Math;
 
 import static java.lang.System.*;
 
-/*
- *  The Mexico dice game
- *  See https://en.wikipedia.org/wiki/Mexico_(game)
- *
- */
 public class Mexico {
 
     public static void main(String[] args) {
@@ -27,7 +22,7 @@ public class Mexico {
 
     void program() {
         Random rand = new Random();
-        // test(); // <----------------- UNCOMMENT to test
+        // test();
 
         int pot = 0; // What the winner will get
         Player[] players; // The players (array of Player objects)
@@ -43,12 +38,8 @@ public class Mexico {
 
         while (players.length > 1) { // Game over when only one player left
 
-
-            // ----- In ----------
             String cmd = getPlayerChoice(current);
             if ("r".equals(cmd)) {
-
-                // --- Process ------
                 if (current.nRolls < roundMaxRolls) {
                     rollDice(current);
                     roundMsg(current);
@@ -57,13 +48,7 @@ public class Mexico {
                     setRoundMaxRolls(current, leader, current.nRolls);
                     current = next(players, current);
                 }
-
-
-                // ---- Out --------
-
-
             } else if ("n".equals(cmd)) {
-                // Process
                 if (!(current.nRolls <= 0)) {
                     numberOfRolledPlayers++;
                     setRoundMaxRolls(current, leader, current.nRolls);
@@ -78,14 +63,18 @@ public class Mexico {
             }
 
             if (allRolled(players)) {
-                // --- Process -----
+
                 Player loser = getLoser(players);
                 loser.amount--;
                 pot++;
+
                 if (loser.amount == 0) {
                     players = removeLoser(players, loser);
+                    current = next(players, current);
+                } else {
+                    current = loser;
                 }
-                current = next(players, current);
+
                 clearRoundResults(players);
                 numberOfRolledPlayers = 0;
 
@@ -108,7 +97,6 @@ public class Mexico {
 
     // ---- Game logic methods --------------
 
-    // TODO implement and test methods (one at the time)
 
     int indexOf(Player[] players, Player player) {
         for (int i = 0; i < players.length; i++) {
@@ -130,16 +118,16 @@ public class Mexico {
     }
 
     int getScore(Player player) {
-        if (player.fstDice == 2 && player.secDice == 1) {
+        int larger = Math.max(player.fstDice, player.secDice);
+        int smaller = Math.min(player.fstDice, player.secDice);
+
+        if (larger == 2 && smaller == 1) {
             return mexico;
         }
 
-        if (player.fstDice == player.secDice) {
+        if (larger == smaller) {
             return player.fstDice * 100;
         }
-
-        int larger = Math.max(player.fstDice, player.secDice);
-        int smaller = Math.min(player.fstDice, player.secDice);
 
         return larger * 10 + smaller;
     }
@@ -214,8 +202,6 @@ public class Mexico {
     // ---------- IO methods (nothing to do here) -----------------------
 
     Player[] getPlayers() {
-        // Ugly for now. If using a constructor this may
-        // be cleaned up.
         Player p1 = new Player("Olle", startAmount);
         Player p2 = new Player("Fia", startAmount);
         Player p3 = new Player("Lisa", startAmount);
