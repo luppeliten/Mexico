@@ -23,6 +23,7 @@ public class Mexico {
     final int startAmount = 3; // Money for a player. Select any
     final int mexico = 1000; // A value greater than any other
     int roundMaxRolls = maxRolls;
+    int numberOfRolledPlayers = 0;
 
     void program() {
         Random rand = new Random();
@@ -52,7 +53,8 @@ public class Mexico {
                     rollDice(current);
                     roundMsg(current);
                 } else {
-                    setRoundMaxRolls(current, leader, roundMaxRolls, current.nRolls);
+                    numberOfRolledPlayers++;
+                    setRoundMaxRolls(current, leader, current.nRolls);
                     current = next(players, current);
                 }
 
@@ -60,15 +62,16 @@ public class Mexico {
                 // ---- Out --------
 
 
-            }
-			else if ("n".equals(cmd)) {
+            } else if ("n".equals(cmd)) {
                 // Process
-				if (!(current.nRolls <= 0)) {
-					setRoundMaxRolls(current, leader, roundMaxRolls, current.nRolls);
-					current = next(players, current);
-				} else {
-					System.out.println("Action is not allowed: must roll dices atleast once");
-				}
+                if (!(current.nRolls <= 0)) {
+                    numberOfRolledPlayers++;
+                    setRoundMaxRolls(current, leader, current.nRolls);
+                    current = next(players, current);
+                } else {
+                    System.out.println("Action is not allowed: must roll dices atleast once");
+                }
+
 
             } else {
                 out.println("?");
@@ -77,26 +80,28 @@ public class Mexico {
             if (allRolled(players)) {
                 // --- Process -----
                 Player loser = getLoser(players);
-				loser.amount--;
-				pot++;
+                loser.amount--;
+                pot++;
                 if (loser.amount == 0) {
                     players = removeLoser(players, loser);
                 }
                 current = next(players, current);
                 clearRoundResults(players);
+                numberOfRolledPlayers = 0;
 
 
                 // ----- Out --------------------
                 out.println("Round done " + loser.name + " lost!");
 
-				if (players.length > 1) {
-					statusMsg(players);
-					out.println("Next to roll is " + current.name);
-				}
+                if (players.length > 1) {
+                    statusMsg(players);
+                    out.println("Next to roll is " + current.name);
+                }
             }
 
 
         }
+
 
         out.println("Game Over, winner is " + players[0].name + ". Will get " + pot + " from pot");
     }
@@ -147,8 +152,8 @@ public class Mexico {
             int score = getScore(playerArray[i]);
 
             if (score < lowestScore) {
-				index = i;
-				lowestScore = score;
+                index = i;
+                lowestScore = score;
             }
         }
 
@@ -181,12 +186,12 @@ public class Mexico {
         int oldLength = players.length;
         int newLength = oldLength - 1;
         Player[] newPlayers = new Player[newLength];
-		int newPlayersCursor = 0;
+        int newPlayersCursor = 0;
 
         for (int i = 0; i < oldLength; i++) {
             if (players[i] != loser) {
                 newPlayers[newPlayersCursor] = players[i];
-				newPlayersCursor++;
+                newPlayersCursor++;
             }
         }
 
@@ -194,17 +199,12 @@ public class Mexico {
     }
 
     boolean allRolled(Player[] players) {
-        for (Player player : players) {
-            if (player.nRolls <= 0) {
-                return false;
-            }
-        }
-
-        return true;
+        int numberOfPlayers = players.length;
+        return numberOfRolledPlayers >= numberOfPlayers;
     }
 
 
-    void setRoundMaxRolls(Player player, Player leader, int roundMaxRolls, int rolls) {
+    void setRoundMaxRolls(Player player, Player leader, int rolls) {
         if (player == leader) {
             roundMaxRolls = rolls;
         }
@@ -268,7 +268,7 @@ public class Mexico {
     void test() {
         // A few hard coded player to use for test
         // NOTE: Possible to debug tests from here, very efficient!
-        Player[] ps = {new Player(), new Player(), new Player()};
+        Player[] ps = getPlayers();
         ps[0].fstDice = 2;
         ps[0].secDice = 6;
         ps[1].fstDice = 6;
