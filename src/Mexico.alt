@@ -9,7 +9,7 @@ import static java.lang.System.*;
 public class MexicoAlt {
 
 	public static void main(String[] args) {
-		new Mexico().program();
+		new MexicoAlt().program();
 	}
 
 	final SplittableRandom rand = new SplittableRandom();
@@ -108,7 +108,7 @@ public class MexicoAlt {
 		currentPlayer.nRolls++;
 
 		out.println("|");
-		out.println("DEBUG: " + toString(currentPlayer));
+		// out.println("DEBUG: " + toString(currentPlayer));
 	}
 
 	int getScore(Player player) {

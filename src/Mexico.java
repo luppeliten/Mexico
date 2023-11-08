@@ -18,7 +18,6 @@ public class Mexico {
     final int startAmount = 3; // Money for a player. Select any
     final int mexico = 1000; // A value greater than any other
     int roundMaxRolls = maxRolls;
-    int numberOfRolledPlayers = 0;
 
     void program() {
         Random rand = new Random();
@@ -38,33 +37,30 @@ public class Mexico {
 
         while (players.length > 1) { // Game over when only one player left
 
-            String cmd = getPlayerChoice(current);
-            if ("r".equals(cmd)) {
-                if (current.nRolls < roundMaxRolls) {
+            if (current.nRolls < roundMaxRolls) {
+                String cmd = getPlayerChoice(current);
+                if ("r".equals(cmd)) {
                     rollDice(current);
                     roundMsg(current);
-                } else {
-                    numberOfRolledPlayers++;
-                    setRoundMaxRolls(current, leader, current.nRolls);
-                    current = next(players, current);
-                }
-            } else if ("n".equals(cmd)) {
-                if (!(current.nRolls <= 0)) {
-                    numberOfRolledPlayers++;
-                    setRoundMaxRolls(current, leader, current.nRolls);
-                    current = next(players, current);
-                } else {
-                    System.out.println("Action is not allowed: must roll dices atleast once");
-                }
+                } else if ("n".equals(cmd)) {
+                    if (!(current.nRolls <= 0)) {
+                        setRoundMaxRolls(current, leader);
+                        current = next(players, current);
+                    } else {
+                        System.out.println("Action is not allowed: must roll dices at least once");
+                    }
 
-
+                } else {
+                    out.println("?");
+                }
             } else {
-                out.println("?");
+                current = next(players, current);
             }
 
-            if (allRolled(players)) {
+            // Round end
+            if (((leader == current) && next(players, current).nRolls != 0)) {
 
-                Player loser = getLoser(players);
+                Player loser = getLoser(players, indexOf(players, leader));
                 loser.amount--;
                 pot++;
 
@@ -75,8 +71,8 @@ public class Mexico {
                     current = loser;
                 }
 
+                leader = current;
                 clearRoundResults(players);
-                numberOfRolledPlayers = 0;
 
 
                 // ----- Out --------------------
@@ -87,10 +83,7 @@ public class Mexico {
                     out.println("Next to roll is " + current.name);
                 }
             }
-
-
         }
-
 
         out.println("Game Over, winner is " + players[0].name + ". Will get " + pot + " from pot");
     }
@@ -108,10 +101,6 @@ public class Mexico {
     }
 
     void rollDice(Player currentPlayer) {
-        if (currentPlayer.nRolls >= roundMaxRolls) {
-            return;
-        }
-
         currentPlayer.fstDice = rand.nextInt(5) + 1;
         currentPlayer.secDice = rand.nextInt(5) + 1;
         currentPlayer.nRolls++;
@@ -132,25 +121,26 @@ public class Mexico {
         return larger * 10 + smaller;
     }
 
-    Player getLoser(Player[] playerArray) {
+    Player getLoser(Player[] playerArray, int leaderIndex) {
         int lowestScore = mexico;
-        int index = -1;
+        int lowestScoreIndex = -1;
 
         for (int i = 0; i < playerArray.length; i++) {
-            int score = getScore(playerArray[i]);
+            int index = (leaderIndex + i) % playerArray.length;
+            int score = getScore(playerArray[index]);
 
             if (score < lowestScore) {
-                index = i;
+                lowestScoreIndex = index;
                 lowestScore = score;
             }
         }
 
         // No player with the lowest score was found
-        if (index == -1) {
+        if (lowestScoreIndex == -1) {
             return null;
         }
 
-        return playerArray[index];
+        return playerArray[lowestScoreIndex];
     }
 
     Player getRandomPlayer(Player[] players) {
@@ -186,15 +176,9 @@ public class Mexico {
         return newPlayers;
     }
 
-    boolean allRolled(Player[] players) {
-        int numberOfPlayers = players.length;
-        return numberOfRolledPlayers >= numberOfPlayers;
-    }
-
-
-    void setRoundMaxRolls(Player player, Player leader, int rolls) {
+    void setRoundMaxRolls(Player player, Player leader) {
         if (player == leader) {
-            roundMaxRolls = rolls;
+            roundMaxRolls = leader.nRolls;
         }
     }
 
@@ -265,7 +249,7 @@ public class Mexico {
         out.println(getScore(ps[0]) == 62);
         out.println(getScore(ps[1]) == 65);
         out.println(next(ps, ps[0]) == ps[1]);
-        out.println(getLoser(ps) == ps[0]);
+        out.println(getLoser(ps, 0) == ps[0]);
 
         exit(0);
     }
